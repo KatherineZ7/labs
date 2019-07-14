@@ -54,17 +54,11 @@ int sortirovka(char **mas, int count) {
 			mas[j] = mas[j+1] ;
 			mas[j+1] = tmp;
 			G++; }
-			//printf("Да\n"); }  //здесь чисто коментарии для отслеживания что вообще происходит 
-
-		//	else
-		//	printf("нет\n");
-
-			//printf("%s", mas[count]);
+	}
 
 	}
-	//printf("\n\n");
-	
-	}
+	char Symbol=(mas[count-1][0]);
+	printf("\nПервый символ последней строки: %c\n", Symbol);
 
 	return G;
 }
@@ -84,18 +78,16 @@ int main(int argc, char **argv){
 	char **mas = NULL; //указатель на массив указателей на строки
 	mtrace();
 	mas = readMas(count);
-	
+
 	printf("\nСтроки, которые вы ввели: \n");
 	printMas(mas, count);
 
-	
 	G=sortirovka(mas, count);
 	printf("Количество перестановок: %d\n", G);
-	
-	
+
 	printf("\nЧто получилось после перестановки: \n");
 	printAfter(mas, count);
-	
+
 	freeMas(mas, count);
 
 return 0;
