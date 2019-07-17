@@ -11,9 +11,8 @@ char** readMas(int count){
 	for (int i = 0; i < count ; i++){
 
 		mas[i] = (char *)malloc(sizeof(char)*MAX_LEN); //выделяем память для строки
-		
+
 		fgets(mas[i],MAX_LEN,stdin); //читаем строку с пробелами
-		
 
 	}
 	return mas; 
@@ -40,6 +39,38 @@ void freeMas(char **mas, int count){
 	free(mas); // освобождаем памать для массива указателей на строки
 }
 
+
+
+/*
+int separation(char **words) {
+	int count = 0;
+	char *a = strtok(words," ,.-");
+	while (a != NULL){
+		count++;
+		a = strtok(NULL, " ,.-");
+		}
+	//printf("m= %d\n",count);
+return count;
+}
+*/
+
+int separation(char **mas, int count) {
+	int i,j,m = 0;
+
+	for(i = 0; i < count; i++) {
+	for(j = 0; mas[i][j]!='\0'; j++) {
+		
+		if(mas[i][j] == ' '){
+			m++;
+			printf("m= %d\n",m);
+			}
+		}
+
+	//printf("m= %d\n", m);
+
+}
+return m;
+}
 
 
 int sortirovka(char **mas, int count) {
@@ -72,15 +103,16 @@ int main(int argc, char **argv){
 	printf("Введите сколько будет строк: ");
 	int count =0;
 	scanf("%d", &count);
-	printf("%d", count);
-	
-	printf("\nВведите строки по порядку:");
+
+	printf("\nВведите строки по порядку: \n");
 	char **mas = NULL; //указатель на массив указателей на строки
 	mtrace();
 	mas = readMas(count);
 
 	printf("\nСтроки, которые вы ввели: \n");
 	printMas(mas, count);
+
+	separation(mas,count);
 
 	G=sortirovka(mas, count);
 	printf("Количество перестановок: %d\n", G);
