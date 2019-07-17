@@ -9,11 +9,8 @@ char** readMas(int count){
 	mas = (char **)malloc(sizeof(char *)*count);// выделяем память для массива указателей
 	getchar();
 	for (int i = 0; i < count ; i++){
-
 		mas[i] = (char *)malloc(sizeof(char)*MAX_LEN); //выделяем память для строки
-
 		fgets(mas[i],MAX_LEN,stdin); //читаем строку с пробелами
-
 	}
 	return mas; 
 }
@@ -24,14 +21,6 @@ void printMas(char **mas, int count){
 	}
 }
 
-
-void printAfter(char **mas, int count){
-	for (int i = 0; i < count ; i++){
-		printf("%s", mas[i]);
-	}
-}
-
-
 void freeMas(char **mas, int count){
 	for (int i = 0; i < count; i++){
 		free(mas[i]); // освобождаем память для отдельной строки
@@ -40,56 +29,31 @@ void freeMas(char **mas, int count){
 }
 
 
-
-/*
-int separation(char **words) {
-	int count = 0;
-	char *a = strtok(words," ,.-");
-	while (a != NULL){
-		count++;
-		a = strtok(NULL, " ,.-");
-		}
-	//printf("m= %d\n",count);
-return count;
-}
-*/
-
-int separation(char **mas, int count) {
-	int i,j,m = 0;
-
-	for(i = 0; i < count; i++) {
-	for(j = 0; mas[i][j]!='\0'; j++) {
-		
-		if(mas[i][j] == ' '){
+int separation(char *mas) {
+	int i,m = 0;
+	for(i = 0; mas[i]!='\0'; i++) {
+		if(mas[i] == ' '){
 			m++;
-			printf("m= %d\n",m);
-			}
 		}
+	}
 
-	//printf("m= %d\n", m);
-
-}
 return m;
 }
 
-
 int sortirovka(char **mas, int count) {
 	int i,j,G=0;
-
 	for(i = 0; i < count-1; i++) {  //количество раз, сколько нужно сделать пузырьки (сколько раз поменять строки местами)
 		for(j = 0; j < count-i-1 ; j++) { //каждый конкретный пузырёк (сравнение двух строк рядом)
-		
-			if(strlen(mas[j]) > strlen(mas[j+1])) {
-
-			char* tmp = mas[j];
-			mas[j] = mas[j+1] ;
-			mas[j+1] = tmp;
-			G++; }
-	}
-
+			if(separation(mas[j]) > separation(mas[j+1])) {
+				char* tmp = mas[j];
+				mas[j] = mas[j+1] ;
+				mas[j+1] = tmp;
+				G++; 
+			}
+		}
 	}
 	char Symbol=(mas[count-1][0]);
-	printf("\nПервый символ последней строки: %c\n", Symbol);
+	printf("\nПервый символ последней строки после перестановки: %c\n", Symbol);
 
 	return G;
 }
@@ -112,13 +76,11 @@ int main(int argc, char **argv){
 	printf("\nСтроки, которые вы ввели: \n");
 	printMas(mas, count);
 
-	separation(mas,count);
-
 	G=sortirovka(mas, count);
 	printf("Количество перестановок: %d\n", G);
 
 	printf("\nЧто получилось после перестановки: \n");
-	printAfter(mas, count);
+	printMas(mas, count);
 
 	freeMas(mas, count);
 
