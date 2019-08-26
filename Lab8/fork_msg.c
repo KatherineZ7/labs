@@ -22,10 +22,12 @@ struct mymsgbuf {
 
 int msgqid, rc;
 
+	//msgsz = length  = sizeof(struct msgbuf) — sizeof(long); размер
+
 void send_message(int qid, struct mymsgbuf *qbuf, long type, char *text){
 		qbuf->mtype = type;
 		strcpy(qbuf->mtext, text);
-
+		printf("Передано:= %s \n", text);
 		if((msgsnd(qid, (struct msgbuf *)qbuf,strlen(qbuf->mtext)+1, 0)) ==-1){
 				perror("msgsnd");
 				exit(1);
@@ -35,7 +37,7 @@ void send_message(int qid, struct mymsgbuf *qbuf, long type, char *text){
 void read_message(int qid, struct mymsgbuf *qbuf, long type){
 		qbuf->mtype = type;
 		msgrcv(qid, (struct msgbuf *)qbuf, MAX_SEND_SIZE, type, 0);
-		printf("Type: %ld Text: %s\n", qbuf->mtype, qbuf->mtext);
+		printf("Сообщение: Контрольная сумма = %s \n", qbuf->mtext);
 }
 
 int main(int argc, char *argv[]) {
@@ -46,18 +48,16 @@ int main(int argc, char *argv[]) {
 	FILE *fp;
 	char fname[MAX_LEN][MAX_LEN];
 	char buff[MAX_LEN];
-	//char *fname=(char *)malloc(MAX_LEN);
-
 
 	printf("< Контрольная сумма > \n");
-	//int number = 2;
 
-/*
-	if (argc < 1) {
-		printf("Введите в формате: ./lab7 <имя файла> ... \n");
+	if (argc < 3) {
+		printf("Введите в формате: ./lab7 <имя файла> <имя файла>... \n");
 		exit(-1);
 	}
-*/
+	for (i = 1; i < argc; i++) {
+		strcpy(fname[i],argv[i]);
+	}
 
 /*
 	printf("Введите имя файла: \n");
@@ -75,13 +75,7 @@ int main(int argc, char *argv[]) {
 				printf("%d\n",c);
 			}
 			printf("Сумма = %d\n",sum);
-			sprintf(buff, "Контрольная сумма: %d \n", sum);
 */
-
-			//msgsz = length  = sizeof(struct msgbuf) — sizeof(long); размер
-			//int msgsnd(int msqid, struct msgbuf *msgp, int msgsz, int msgflg);
-			//int msgsnd(qid, (struct msgbuf *)qbuf,strlen(qbuf->mtext)+1, 0)
-			
 
 	key = ftok(".", 'm');
 	if((msgqid = msgget(key, IPC_CREAT|0660)) == -1) {
@@ -102,50 +96,39 @@ int main(int argc, char *argv[]) {
 					printf("Ошибка при открытии файла.\n");
 			} else {
 				snprintf(buff, sizeof (buff), "%s\n", fname[i]);
-				//write(connfd, buff, strlen(buff));
 				char c;
 				int sum = 0;
 				while ((c = fgetc(fp)) != EOF) {
-				sum += (int)c;
-				printf("%d\n",c);
-				}
-				printf("Сумма = %d\n",sum);
-				//sprintf(sendBuff, "Контрольная сумма: %d \n", sum);
-				//write(connfd, sendBuff, strlen(sendBuff));
-				if (fclose(fp)) {
-				printf ("Ошибка при закрытии файла.\n");
+					sum += (int)c;
+					//printf("%d\n",c);
+					}
+					printf("Сумма = %d\n",sum);
+					sprintf(buff, "%d\n", sum);
+					send_message(msgqid, (struct mymsgbuf *)&qbuf, qtype, buff);
+				if (fclose(fp)){
+					printf ("Ошибка при закрытии файла.\n");
 				}
 			}
-			char c = 0;
-			int sum = 0;
-			while ((c = fgetc(fp)) != EOF) {
-				sum += (int)c;
-				printf("%d\n",c);
-			}
-			printf("Сумма = %d\n",sum);
-			
-			printf(" CHILD: Это %d процесс-потомок ВЫХОД!\n", i);
-			//send_message(msgqid, (struct mymsgbuf *)&qbuf, qtype, sum); 
-			printf(" CHILD: Это %d процесс-потомок отправил сообщение!\n", i);
-			fflush(stdout);
-			exit(0); /* выход из процесс-потомока */
+				printf(" CHILD: Это %d процесс-потомок ВЫХОД!\n", i);
+				printf(" CHILD: Это %d процесс-потомок отправил сообщение!\n", i);
+				fflush(stdout);
+				exit(0); /* выход из процесс-потомока */
 		}
 	}
+	sleep(4);
 	// если выполняется родительский процесс
 	printf("PARENT: Это процесс-родитель!\n");
-	
 	// ожидание окончания выполнения всех запущенных процессов
 	for (i = 1; i < argc; i++) {
 		status = waitpid(pid[i], &stat, 0);
 		if (pid[i] == status) {
-			printf("процесс-потомок %d done,  result=%d text=%s\n", i, WEXITSTATUS(stat), argv[i]);
+			printf("процесс-потомок %d done \n", i);
 			fflush(stdout);
 		}
 	}
 	
 	for (i = 1; i < argc; i++) {
-				read_message(msgqid, &qbuf, qtype);
-				
+		read_message(msgqid, &qbuf, qtype);
 	}
 	
 	if ((rc = msgctl(msgqid, IPC_RMID, NULL)) < 0) {
