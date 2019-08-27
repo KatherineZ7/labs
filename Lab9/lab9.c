@@ -66,7 +66,6 @@ for (int i = 1; i < argc; i++){
 	pid = fork();
 	if (0 == pid) {
 	sum = shm;
-	
 			if ((fp = fopen(fname[i], "r")) == NULL) {
 				printf("Ошибка при открытии файла.\n");
 			} else {
@@ -79,9 +78,10 @@ for (int i = 1; i < argc; i++){
 				sum[i]=sum1;
 				printf("Сумма - дочерний %d = %d\n",i, sum1);
 				fflush(stdout);
+				if (fclose(fp)){ 
+					printf ("Ошибка при закрытии файла.\n");
+				}
 			}
-		
-
 		if (shmdt(shm) < 0) {
 			printf("Ошибка отключения\n");
 			exit(1);
