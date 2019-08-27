@@ -18,25 +18,22 @@
 
 int main(int argc, const char *argv[]){
 
-	int *shm, *shm1, shmid,shmid1, count = 0;
-	int i,sum,sum1;
+	int *shm, *shm1, shmid,shmid1 = 0;
+	int i,*sum,sum1;
 	char fname[MAX_LEN][MAX_LEN];
 	FILE *fp;
 	key_t key,key1;
 
 	printf("< Контрольная сумма > \n");
-
+/*
 	if (argc < 3) {
 		printf( "Введите в формате: ./lab9 <имя файла> <имя файла> \n");
 		exit(1);
 	}
+*/
 	for (i = 1; i < argc; i++) {
 		strcpy(fname[i],argv[i]);
 	}
-
-	sscanf(argv[1], "%d", &count);
-	
-	//int size = sizeof(int)*count;
 
 	key = ftok(".", 'm');
 	key1 = ftok(".", 'm');
@@ -64,44 +61,26 @@ int main(int argc, const char *argv[]){
 		exit(1);
 	}
 
-	/* Запишем в разделяемую память */
-	sum1 = *shm1;
-	sum = *shm;
-	for (int i = 1; i < argc; i++){
-		if ((fp = fopen(fname[i], "r")) == NULL) {
-			printf("Ошибка при открытии файла.\n");
-		} else {
-			char c;
-			sum = 0;
-			if (i==1){
-				while ((c = fgetc(fp)) != EOF) {
-				sum1 +=(int)c;
-				//printf("%d\n",c);
-				}
-			printf("Сумма1 = %d\n",sum1);
-			} else {
-			while ((c = fgetc(fp)) != EOF) {
-				sum +=(int)c;
-				//printf("%d\n",c);
-			}
-			printf("Сумма2 = %d\n",sum);
-		}
-		}
-	}
-	
 	pid_t pid;
 	pid = fork();
 	if (0 == pid) {
+	sum = shm;
+	for (int i = 1; i < argc; i++){
+			if ((fp = fopen(fname[i], "r")) == NULL) {
+				printf("Ошибка при открытии файла.\n");
+			} else {
+				char c;
+				sum1 = 0;
+				while ((c = fgetc(fp)) != EOF) {
+					sum1 +=(int)c;
+					//printf("%d\n",c);
+					}
+				sum[i]=sum1;
+				printf("Сумма - дочерний = %d\n", sum[i]);
+				fflush(stdout);
+			}
+		}
 
-		/* Прочитаем из разделяемой памяти */
-		//sum1 = shm1;
-		//sum = shm;
-		//for (int i = 1; i < argc; i++){
-			printf("Контрольная сумма1 = %d \n", sum1);
-			printf("Контрольная сумма2 = %d \n", sum);
-		//}
-
-		
 		if (shmdt(shm) < 0) {
 			printf("Ошибка отключения\n");
 			exit(1);
@@ -115,8 +94,17 @@ int main(int argc, const char *argv[]){
 	} else if (pid < 0){
 		perror("fork"); /* произошла ошибка */
 		exit(1); /*выход из родительского процесса*/
-	}	
+	} else {
 	
+	sleep(1);
+	printf("Процесс-родитель \n");
+	/* Прочитаем из разделяемой памяти */
+	sum = shm;
+	for (int i = 1; i < argc; i++){
+		printf("Контрольная сумма - родитель = %d \n", sum[i]);
+	}
+}
+
 	wait(NULL);
 	
 	/* Удалим созданные объекты IPC */	
@@ -126,3 +114,4 @@ int main(int argc, const char *argv[]){
 	}
 	exit(0);
 }
+
