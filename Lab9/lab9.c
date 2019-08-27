@@ -60,12 +60,13 @@ int main(int argc, const char *argv[]){
 		perror("shmat");
 		exit(1);
 	}
-
+////
+for (int i = 1; i < argc; i++){
 	pid_t pid;
 	pid = fork();
 	if (0 == pid) {
 	sum = shm;
-	for (int i = 1; i < argc; i++){
+	
 			if ((fp = fopen(fname[i], "r")) == NULL) {
 				printf("Ошибка при открытии файла.\n");
 			} else {
@@ -76,10 +77,10 @@ int main(int argc, const char *argv[]){
 					//printf("%d\n",c);
 					}
 				sum[i]=sum1;
-				printf("Сумма - дочерний = %d\n", sum[i]);
+				printf("Сумма - дочерний %d = %d\n",i, sum1);
 				fflush(stdout);
 			}
-		}
+		
 
 		if (shmdt(shm) < 0) {
 			printf("Ошибка отключения\n");
@@ -100,9 +101,10 @@ int main(int argc, const char *argv[]){
 	printf("Процесс-родитель \n");
 	/* Прочитаем из разделяемой памяти */
 	sum = shm;
-	for (int i = 1; i < argc; i++){
+	//for (int i = 1; i < argc; i++){
 		printf("Контрольная сумма - родитель = %d \n", sum[i]);
-	}
+	//}
+}
 }
 
 	wait(NULL);
