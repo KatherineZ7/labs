@@ -1,5 +1,5 @@
 // Винни и пчёлы
-// Описание: Пример задачи писателей-читателя с мьютексами и ожиданием доступа потребителем
+
 #include <pthread.h>
 #include <sys/types.h> 
 #include <sys/stat.h> 
@@ -10,10 +10,8 @@
 #include <unistd.h>
 #include <signal.h>
 
-#define	MAXNITEMS 1000000
-#define	MAXNTHREADS 100
+#define	MAXNTHREADS 1024
 
-static int potok; /* только для чтения потребителем и производителем */
 struct {
 	pthread_mutex_t	mutex;
 	int	barrel;
@@ -38,14 +36,13 @@ int main(int argc, char **argv){
 */
 	bees = 5;
 	grfrombees = 2;
-	grfromwinni = 5; 
+	grfromwinni = 10; 
 
 	pthread_t tid_produce[MAXNTHREADS], tid_consume;
 
 	/* создание всех производителей и одного потребителя */
 	for (i = 0; i < bees; i++) {
 		pthread_create(&tid_produce[i], NULL, produce, &grfrombees);
-		potok++;
 	}
 	pthread_create(&tid_consume, NULL, consume, &grfromwinni);
 
@@ -63,42 +60,37 @@ int main(int argc, char **argv){
 }
 
 void consume_wait(){
-	
 		pthread_mutex_lock(&shared.mutex);
 		if (shared.barrel < 0) {
-			printf("МЁД ЗАКОЧИЛСЯ!\n");
+			printf("МЁД ЗАКОНЧИЛСЯ!\n");
+			pthread_mutex_unlock(&shared.mutex);
 			pthread_exit(0);
 	}
 		pthread_mutex_unlock(&shared.mutex);
-	
 }
 
 void *produce(void *arg){
-		int a = *((int *) arg); 
+		int a = *((int *) arg);
 	for ( ; ; ) {
 		pthread_mutex_lock(&shared.mutex);
-		int barrel = 0; 
-		barrel = barrel + a;
-		printf("Количество мёда в бочке: %d \n", barrel);
-		shared.barrel = barrel;
-		a=a+*((int *) arg);
+		shared.barrel += a;
+		printf("*РАБОТАЮТ ПЧЁЛЫ* Количество мёда в бочке: %d \n", shared.barrel);
 		pthread_mutex_unlock(&shared.mutex);
-		sleep(rand()%15);
 		consume_wait();
+		sleep(rand()%5);
 	}
 		return(0);
 }
 
 void *consume(void *arg){
+		int a = *((int *) arg);
 	for ( ; ; ) {
 		pthread_mutex_lock(&shared.mutex);
-		int barrel = 0 ;
-		barrel = shared.barrel - *((int *) arg);
-		printf("Количество мёда в бочке Винни: %d \n", barrel);
-		shared.barrel = barrel;
-		//consume_wait();
+		shared.barrel -= a;
+		printf("*РАБОТАЕТ ВИННИ* После Винни мёда в бочке осталось: %d \n", shared.barrel);
 		pthread_mutex_unlock(&shared.mutex);
-		sleep(rand()%10);
+		consume_wait();
+		sleep(rand()%4);
 	}
 	return(0);
 }
