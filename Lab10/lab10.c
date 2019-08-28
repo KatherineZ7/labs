@@ -26,17 +26,13 @@ int main(int argc, char **argv){
 	int i,bees,grfrombees,grfromwinni = 0;
 
 	printf("< Винни и пчёлы > \n");
-/*
-	printf("Введите количество пчёл:  ");
+
+	printf("Введите количество пчёл:  \n");
 	scanf("%d",&bees);
-	printf("Введите сколько мёда приносит каждая пчела:  ");
+	printf("Введите сколько мёда приносит каждая пчела:  \n");
 	scanf("%d",&grfrombees);
-	printf("Введите сколько мёда сьедает Винни:  ");
+	printf("Введите сколько мёда сьедает Винни:  \n");
 	scanf("%d",&grfromwinni);
-*/
-	bees = 5;
-	grfrombees = 2;
-	grfromwinni = 10; 
 
 	pthread_t tid_produce[MAXNTHREADS], tid_consume;
 
@@ -50,7 +46,6 @@ int main(int argc, char **argv){
 	
 	for (i = 0; i < bees; i++) {
 		pthread_join(tid_produce[i], NULL);
-		//printf("count[%d] = %d\n", i, count[i]);
 		printf("Успешно завершён #%lu \n", tid_produce[i]);
 	}
 	pthread_join(tid_consume, NULL);
@@ -58,13 +53,13 @@ int main(int argc, char **argv){
 	
 	exit(0);
 }
-
 void consume_wait(){
 		pthread_mutex_lock(&shared.mutex);
-		if (shared.barrel < 0) {
-			printf("МЁД ЗАКОНЧИЛСЯ!\n");
-			pthread_mutex_unlock(&shared.mutex);
-			pthread_exit(0);
+	if (shared.barrel <= 0) {
+		printf("МЁД ЗАКОНЧИЛСЯ!\n");
+		pthread_mutex_unlock(&shared.mutex);
+		pthread_exit(0);
+		sleep(15);
 	}
 		pthread_mutex_unlock(&shared.mutex);
 }
@@ -76,21 +71,22 @@ void *produce(void *arg){
 		shared.barrel += a;
 		printf("*РАБОТАЮТ ПЧЁЛЫ* Количество мёда в бочке: %d \n", shared.barrel);
 		pthread_mutex_unlock(&shared.mutex);
+		sleep(rand()%15);
 		consume_wait();
-		sleep(rand()%5);
 	}
 		return(0);
 }
 
 void *consume(void *arg){
 		int a = *((int *) arg);
+		sleep(1);
 	for ( ; ; ) {
 		pthread_mutex_lock(&shared.mutex);
 		shared.barrel -= a;
 		printf("*РАБОТАЕТ ВИННИ* После Винни мёда в бочке осталось: %d \n", shared.barrel);
 		pthread_mutex_unlock(&shared.mutex);
 		consume_wait();
-		sleep(rand()%4);
+		sleep(rand()%5);
 	}
 	return(0);
 }
